@@ -20,7 +20,8 @@ print(classNames)
 
 # Initialize the webcam
 cap = cv2.VideoCapture(0)
-
+previous_name = ""
+how_many = 0
 while True:
     # Read each frame from the webcam
     _, frame = cap.read()
@@ -29,15 +30,14 @@ while True:
 
     # Flip the frame vertically
     frame = cv2.flip(frame, 1)
-    framergb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # Get hand landmark prediction
-    result = hands.process(framergb)
+    result = hands.process(frame_rgb)
 
     # print(result)
 
     className = ''
-
     # post process the result
     if result.multi_hand_landmarks:
         landmarks = []
@@ -58,11 +58,31 @@ while True:
             classID = np.argmax(prediction)
             className = classNames[classID]
 
-    # show the prediction on the frame
-    cv2.putText(frame, className, (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                1, (0, 0, 255), 2, cv2.LINE_AA)
+            # show the prediction on the frame
+            # cv2.putText(frame, className, (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
+            # 1, (0, 0, 255), 2, cv2.LINE_AA)
+            # use okay, peace, thumbs up, thumbs down, and call me
+            # need to make a section of code that checks if
+            # Show the final output
+            # print(previous_name)
+            # print(className)
+            if previous_name == className:
+                how_many = how_many + 1
+                # print("INCREMENTED")
+            if previous_name != className:
+                how_many = 0
 
-    # Show the final output
+            previous_name = className
+
+            if how_many >= 8:
+                # print(className)
+                # here is where we will put the code for the rest of the things and remember to set how many back to 0 or lower
+                if className == "thumbs down":
+                    print("next slide")
+
+                if className == "thumbs up":
+                    print("back 1 slide")
+
     cv2.imshow("Output", frame)
 
     if cv2.waitKey(1) == ord('q'):

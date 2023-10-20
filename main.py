@@ -1,6 +1,7 @@
 # This is a sample Python script.
 import os
 import json
+import secrets
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -14,7 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/presentations.readonly', 'https://www
 
 # slides-id = ‘1Z1Q4jy5pL9NprL2hWkiA3UR173h50yRCAatoyGM8Cfw’
 
-
+state = secrets.token_urlsafe(16)
 REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
 
@@ -27,13 +28,23 @@ def get_refresh_token():
         )
 
         # Redirect user to OAuth 2.0 consent page
-        authorization_url, _ = flow.authorization_url()
+        authorization_url, _ = flow.authorization_url(state=state)
         print(_)
         print('Please go to this URL to authorize access:', authorization_url)
 
+        # Load JSON data from a file
+        with open('credentials.json', 'r') as json_file:
+            json_data = json.load(json_file)
+
         # Obtain authorization code from user
         authorization_response = input('Paste the full redirect URL here: ')
-        flow.fetch_token(authorization_response=authorization_response)
+        json_data["installed"]['refresh_token'] = flow.fetch_token(authorization_response=authorization_response)
+        # Add or modify data
+        # json_data['refresh_token'] = refresh_token
+
+        # Save the updated JSON data back to the file
+        with open('credentials.json', 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
 
         # Access and store the refresh token
         refresh_token = flow.credentials.refresh_token()
